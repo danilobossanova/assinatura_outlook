@@ -5,11 +5,10 @@ Dim xmlhttp, ostream, FS
 Dim url, local, Tamanho, largura, altura
 Dim Mensagem, Texto
 Dim blnWeOpenedWord
-Dim pastaOutlook, pastaAssinaturas
+Dim pastaOutlook
 
-' Defina a pasta de assinaturas do Outlook e a pasta de assinaturas do usuário
+' Defina a pasta de assinaturas do Outlook
 pastaOutlook = CreateObject("WScript.Shell").SpecialFolders("AppData") & "\Microsoft\Signatures"
-pastaAssinaturas = "C:\Users\" & strUsuario & "\AppData\Roaming\Microsoft\Signatures\"
 
 ' Inicie os Objetos
 Set Wshell = CreateObject("Wscript.Shell")
@@ -21,13 +20,13 @@ Set FS = CreateObject("Scripting.FileSystemObject")
 Set objWord = CreateObject("Word.Application")
 blnWeOpenedWord = True
 
-Texto = "Esssa mensagem e reservada e sua divulgacao, distribuicao, reproducao ou qualquer forma de uso e proibida e depende de previa autorizacao desta instituicao. O remetente utiliza o correio eletronico no exercicio do seu trabalho ou em razao dele, eximindo esta instituicao de qualquer responsabilidade por utilizacao indevida. Se voce recebeu esta mensagem por engano, favor elimina-la imediatamente."
+Texto = "Essa mensagem e reservada e sua divulgacao, distribuicao, reproducao ou qualquer forma de uso e proibida e depende de previa autorizacao desta instituicao. O remetente utiliza o correio eletronico no exercicio do seu trabalho ou em razao dele, eximindo esta instituicao de qualquer responsabilidade por utilizacao indevida. Se voce recebeu esta mensagem por engano, favor elimina-la imediatamente."
 Texto = Texto & vbCrLf & " This message is reserved and its disclosure, distribution, reproduction or any other form of use is prohibited and shall depend upon previous proper authorization. The sender uses the electronic mail in the exercise of his/her work or by virtue thereof, and the institution accepts no liability for its undue use. If you have received this e-mail by mistake, please delete it immediately."
 
 ' Função para definir o nome do arquivo da assinatura de e-mail
 Function setaLocalAssinatura
     If strUsuario <> "diesgor" Then
-        local = pastaAssinaturas & "sign_" & LCase(strUsuario) & ".htm" ' Alteração do formato de arquivo para .htm
+        local = pastaOutlook & "\sign__" & LCase(strUsuario) & ".png"
         setaLocalAssinatura = True
     Else
         setaLocalAssinatura = False
@@ -63,8 +62,8 @@ Function getImagemAssinatura
     makeHttpRequest url
 
     If xmlhttp.Status = 200 Then
-        If Not (FS.FolderExists(pastaAssinaturas)) Then ' Alteração para verificar a pasta de assinaturas do usuário
-            FS.CreateFolder (pastaAssinaturas)
+        If Not (FS.FolderExists(pastaOutlook)) Then
+            FS.CreateFolder (pastaOutlook)
         End If
 
         With ostream
@@ -86,19 +85,8 @@ Function getImagemAssinatura
         getImagemAssinatura = True
     End If
 
-    MsgBox "Assinatura gerada com sucesso!"
+    MsgBox "Assinatura copiada com sucesso!"
     getImagemAssinatura = True
-End Function
-
-' Função para definir a assinatura padrão no Outlook
-Function definirAssinaturaPadrao()
-    Set objEmailOptions = objWord.EmailOptions
-    Set objSignatureObjects = objWord.EmailOptions.EmailSignature
-    Set objSignatureEntries = objSignatureObjects.EmailSignatureEntries
-    
-    ' Define a nova assinatura como a assinatura padrão para novas mensagens e respostas/encaminhamentos
-    objSignatureObjects.NewMessageSignature = "sign_" & strUsuario
-    objSignatureObjects.ReplyMessageSignature = "sign_" & strUsuario
 End Function
 
 ' Chamadas para funções principais
@@ -106,18 +94,57 @@ If (getUserName) Then
     setDimensoesAssinatura
     If (setaLocalAssinatura) Then
         If (getImagemAssinatura) Then
-            ' Criação da assinatura no diretório de assinaturas do usuário
             Set objDoc = objWord.Documents.Add()
             Set objSelection = objWord.Selection
-            objDoc.SaveAs local, 10 ' Salva o documento como formato HTML
-            
-            ' Define a assinatura padrão no Outlook
-            definirAssinaturaPadrao
-            
-            ' Fechar o Word
-            objWord.Quit
-            
-            Mensagem = "Assinatura gerada com sucesso!"
+            Set objEmailOptions = objWord.EmailOptions
+            Set objSignatureObjects = objWord.EmailOptions.EmailSignature
+            Set objSignatureEntries = objSignatureObjects.EmailSignatureEntries
+
+            Set objShape = objDoc.Shapes
+            Set objRange = objDoc.Range()
+
+            Set objEmailOptions = objWord.EmailOptions
+            Set objSignatureObject = objEmailOptions.EmailSignature
+            Set objSignatureEntries = objSignatureObject.EmailSignatureEntries
+
+            objSignatureObjects.NewMessageSignature = strUsuario & "(" & strUsuario & "@grupocopar.com.br")
+            objSignatureObjects.ReplyMessageSignature = strUsuario & "(" & strUsuario & "@grupocopar.com.br")
+
+            objDoc.Tables.Add objRange, 2, 1
+            Set objTable = objDoc.Tables(1)
+
+            Set assinatura = objTable.Cell(1, 1).Range.InlineShapes.AddPicture(local)
+            With assinatura
+                .Height = altura
+                .Width = largura
+            End With
+
+            objTable.Cell(2, 1).Range.Font.Name = "Calibri"
+            objTable.Cell(2, 1).Range.Font.Size = 8
+            objTable.Cell(2, 1).Range.Font.Color = "green"
+            objTable.Range.ParagraphFormat.SpaceAfter = 1
+            objTable.Cell(2, 1).Range.Text = Texto
+
+            objTable.Columns(1).PreferredWidth = largura
+            objTable.Columns(2).PreferredWidth = largura
+
+            Set objSelection = objDoc.Range()
+            objSignatureEntries.Add "sign__" & strUsuario, objSelection
+            objSignatureObjects.NewMessageSignature = "sign__" & strUsuario
+            objSignatureObjects.ReplyMessageSignature = "sign__" & strUsuario
+
+            Set objSelection = objDoc.Range()
+            objSignatureEntries.Add "sign__" & strUsuario, objSelection
+            objSignatureObjects.NewMessageSignature = "sign__" & strUsuario
+            objSignatureObjects.ReplyMessageSignature = "sign__" & strUsuario
+
+            Mensagem = "Assinatura gerada com sucesso!!"
+
+            On Error Resume Next
+            objDoc.Close 0
+            If blnWeOpenedWord Then
+                objWord.Quit
+            End If
         Else
             MsgBox "Erro ao salvar imagem da assinatura de e-mail"
         End If
