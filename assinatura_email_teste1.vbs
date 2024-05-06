@@ -107,8 +107,8 @@ If (getUserName) Then
             Set objSignatureObject = objEmailOptions.EmailSignature
             Set objSignatureEntries = objSignatureObject.EmailSignatureEntries
 
-            objSignatureObjects.NewMessageSignature = strUsuario & "(" & strUsuario & "@grupocopar.com.br)"
-            objSignatureObjects.ReplyMessageSignature = strUsuario & "(" & strUsuario & "@grupocopar.com.br)"
+            objSignatureObjects.NewMessageSignature = "sign__" & strUsuario
+            objSignatureObjects.ReplyMessageSignature = "sign__" & strUsuario
 
             objDoc.Tables.Add objRange, 2, 1
             Set objTable = objDoc.Tables(1)
@@ -129,14 +129,14 @@ If (getUserName) Then
             objTable.Columns(2).PreferredWidth = largura
 
             Set objSelection = objDoc.Range()
-            objSignatureEntries.Add strUsuario & "(" & strUsuario & "@grupocopar.com.br)", objSelection
-            objSignatureObjects.NewMessageSignature = strUsuario & "(" & strUsuario & "@grupocopar.com.br)"
-            objSignatureObjects.ReplyMessageSignature = strUsuario & "(" & strUsuario & "@grupocopar.com.br)"
+            objSignatureEntries.Add "sign__" & strUsuario, objSelection
+            objSignatureObjects.NewMessageSignature = "sign__" & strUsuario
+            objSignatureObjects.ReplyMessageSignature = "sign__" & strUsuario
 
             Set objSelection = objDoc.Range()
-            objSignatureEntries.Add strUsuario & "(" & strUsuario & "@grupocopar.com.br)", objSelection
-            objSignatureObjects.NewMessageSignature = strUsuario & "(" & strUsuario & "@grupocopar.com.br)"
-            objSignatureObjects.ReplyMessageSignature = strUsuario & "(" & strUsuario & "@grupocopar.com.br)"
+            objSignatureEntries.Add "sign__" & strUsuario, objSelection
+            objSignatureObjects.NewMessageSignature = "sign__" & strUsuario
+            objSignatureObjects.ReplyMessageSignature = "sign__" & strUsuario
 
             Mensagem = "Assinatura gerada com sucesso!!"
 
