@@ -94,21 +94,22 @@ If (getUserName) Then
     setDimensoesAssinatura
     If (setaLocalAssinatura) Then
         If (getImagemAssinatura) Then
+        
             Set objDoc = objWord.Documents.Add()
             Set objSelection = objWord.Selection
             Set objEmailOptions = objWord.EmailOptions
+
             Set objSignatureObjects = objWord.EmailOptions.EmailSignature
             Set objSignatureEntries = objSignatureObjects.EmailSignatureEntries
 
             Set objShape = objDoc.Shapes
             Set objRange = objDoc.Range()
 
-            Set objEmailOptions = objWord.EmailOptions
-            Set objSignatureObject = objEmailOptions.EmailSignature
-            Set objSignatureEntries = objSignatureObject.EmailSignatureEntries
+            ' Defina o nome da assinatura para novas mensagens e respostas
+            objEmailOptions.NewMessageSignature = "sign__" & strUsuario
+            objEmailOptions.ReplyMessageSignature = "sign__" & strUsuario
 
-            objSignatureObjects.NewMessageSignature = "sign__" & strUsuario
-            objSignatureObjects.ReplyMessageSignature = "sign__" & strUsuario
+
 
             objDoc.Tables.Add objRange, 2, 1
             Set objTable = objDoc.Tables(1)
@@ -128,15 +129,8 @@ If (getUserName) Then
             objTable.Columns(1).PreferredWidth = largura
             objTable.Columns(2).PreferredWidth = largura
 
-            Set objSelection = objDoc.Range()
-            objSignatureEntries.Add "sign__" & strUsuario, objSelection
-            objSignatureObjects.NewMessageSignature = "sign__" & strUsuario
-            objSignatureObjects.ReplyMessageSignature = "sign__" & strUsuario
-
-            Set objSelection = objDoc.Range()
-            objSignatureEntries.Add "sign__" & strUsuario, objSelection
-            objSignatureObjects.NewMessageSignature = "sign__" & strUsuario
-            objSignatureObjects.ReplyMessageSignature = "sign__" & strUsuario
+            ' Adicione a assinatura à coleção de assinaturas
+            objSignatureEntries.Add "sign__" & strUsuario
 
             Mensagem = "Assinatura gerada com sucesso!!"
 
